@@ -1,0 +1,10 @@
+import pandas as pd
+
+include: 'rules/sim.smk'
+
+if config['simulated']:  # Run simulated bisulfite read rules
+    targets = 'output/simulated/substrates/recordTable.tsv'
+
+rule all:
+    input:
+        targets
