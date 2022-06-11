@@ -3,8 +3,7 @@ channels:
   - defaults
   - bioconda
 dependencies:
-  - perl
-  - bismark
-  - bowtie2
-  - bedtools
-  - samtools
+  - pandas
+  - numpy
+  - biopython
+  
