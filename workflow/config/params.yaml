@@ -1,0 +1,3 @@
+
+chrConfig: workflow/config/randomReads.tsv
+simulated: True
