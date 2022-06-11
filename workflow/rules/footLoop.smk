@@ -4,16 +4,16 @@ rule map_reads_random:
     conda:
         '../envs/footloop.yml'
     input:
-        fastq='output/simulated/substrates/reads/{read_name}.fastq',
-        index='',
-        genome=''
+        fastq='output/simulated/substrates/reads/READS-{chr_name}.fastq',
+        genome='output/simulated/substrates/chrs/CHR-{chr_name}.fa'
     output:
-        mapped_reads_dir=directory('')
+        mapped_reads_dir=directory('output/simulated/mappedReads/MAPPED-{chr_name}')
     params:
-        label=''
+        label='PCB123'
     shell:'''
-    submodules/footLoop.pl -r {input.fastq} -n {output.mapped_reads_dir} \
-    -l {params.label} -i {input.index} -g {input.genome}
+    mkdir -p output/simulated/mappedReads
+    perl workflow/submodules/footLoop/footLoop.pl -r {input.fastq} -n {output.mapped_reads_dir} \
+    -l {params.label} -g {input.genome} -Z
     '''
 
 rule call_peaks:
