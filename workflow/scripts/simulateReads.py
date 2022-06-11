@@ -9,6 +9,7 @@ from Bio.SeqRecord import SeqRecord
 from Bio.Seq import Seq
 import pandas as pd
 from pathlib import Path
+import argparse
 
 
 class chromosomeGenerator:
@@ -183,7 +184,7 @@ class readGenerator:
         return self.get_read()
 
 
-def make_chromosomes(chromosome_table, chr_output_dir, read_output_dir, record_path):
+def make_chr_and_reads(chromosome_table, chr_output_dir, read_output_dir, record_path):
     read_records = []
     for index, row in chromosome_table:
         # Prepare generator to make chromosomes with characteristics specified
@@ -261,5 +262,11 @@ def main():
     args = get_args()
     
     chromosome_table = pd.read(args.chrTable)
+    make_chr_and_reads(chromosome_table, args.chrOut, args.readOut, args.recordOut)
+
+
+if __name__ == '__main__':
+    main()
+    
     
    
