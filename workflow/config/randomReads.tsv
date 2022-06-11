@@ -1,0 +1,7 @@
+chromosome_id	nickname	num_copies	length	"c_content"	c_spacing	num_reads	conversion_eff
+0	Uniform genomic C content	10	3500	"0.2"	Uniform	100	0.70
+1	Uniform low C content	10	3500	"0.05"	Uniform	100	0.70
+2	Random genomic C content	10	3500	"0.2"	Random	100	0.70
+3	Random low C content	10	3500	"0.05"	Random	100	0.70
+4	"Genomic sinusoidal "	10	3500	"0.2"	Sin	100	0.70
+5	Low sinusoidal	10	3500	"0.05"	Sin	100	0.70
