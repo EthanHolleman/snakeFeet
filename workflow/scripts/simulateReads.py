@@ -123,12 +123,6 @@ class chromosomeGenerator:
         return record
 
 
-# class readGenerator():
-
-#     def __init__(self, sequence, )
-
-c = chromosomeGenerator(1, "test", 2000, 0.21, "sin")
-
 
 class readGenerator:
     def __init__(
@@ -142,6 +136,11 @@ class readGenerator:
         self.conversion_track = []  # 2=Converted C  # 1=Unconverted C # 0=Non-C base
 
     def get_read(self):
+        '''Generate a single read based on class attributes.
+
+        Returns:
+            SeqRecord: BioPython SeqRecord object.
+        '''
         length = np.random.normal(loc=avg_loop_length, scale=loop_length_sd)
         start_pos = np.random.randint(0, len(seq_record.seq) - length)
         read_bases = self.seq_record.seq[start_pos : start_pos + length]
@@ -232,7 +231,35 @@ def make_chromosomes(chromosome_table, chr_output_dir, read_output_dir, record_p
     return record_path
 
 
+def get_args():
+    
+    parser = argparse.ArgumentParser(description='Generate random bisulfite reads')
+    parser.add_argument(
+        'chrTable', metavar='C', help='Path to chromosome configuration table')
+    parser.add_argument(
+        'chrOut', metavar='F', 
+        help='Path to directory to write chromosome fasta files to. Reads are \
+            generated from these "chromosomes".'
+    )
+    parser.add_argument(
+        'readOut', metavar='R',
+        help='Path to directory to write bisulfite converted reads to. 1 fastq \
+            file is generated per chromosome containing all reads for that \
+            particular chromosome.'
+    )
+    parser.add_argument(
+        'recordOut', metavar='R',
+        help='Path to write record table to. This is a tsv file containing \
+            descriptions of all reads generated.'
+    )
+    return parser.parse_args()
+    
+
+
 def main():
 
-    chromosome_table = pd.read(args.chr_table)
-    # should have chromosome characteristics and how many to generate
+    args = get_args()
+    
+    chromosome_table = pd.read(args.chrTable)
+    
+   
