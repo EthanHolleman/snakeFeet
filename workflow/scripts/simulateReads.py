@@ -33,7 +33,7 @@ class chromosomeGenerator:
             None: Executes the correct spacing method modifying `seq` attribute.
         """
         if self.c_spacing == "uniform":
-            return self._random_c
+            return self._uniform_c
         elif self.c_spacing == "sin":
             return self._sinusoidal_c
         elif self.c_spacing == "even":
@@ -119,7 +119,7 @@ class chromosomeGenerator:
             Seq("".join(self.seq)),
             id=f"c{self.chromosome_id}-{self.sub_id}",
             name=self.nickname,
-            description="Random chromosome C content:{self.c_content} with {self.c_spacing} distribution",
+            description=f"Random chromosome C content:{self.c_content} with {self.c_spacing} distribution",
         )
         return record
 
@@ -131,8 +131,8 @@ class readGenerator:
     ):
         self.seq_record = seq_record
         self.conversion_eff = conversion_eff
-        self.read_length = read_length
         self.avg_loop_length = avg_loop_length
+        self.loop_length_sd = loop_length_sd
         self.read_counter = 0
         self.conversion_track = []  # 2=Converted C  # 1=Unconverted C # 0=Non-C base
 
@@ -142,35 +142,38 @@ class readGenerator:
         Returns:
             SeqRecord: BioPython SeqRecord object.
         '''
-        length = np.random.normal(loc=avg_loop_length, scale=loop_length_sd)
-        start_pos = np.random.randint(0, len(seq_record.seq) - length)
-        read_bases = self.seq_record.seq[start_pos : start_pos + length]
-        converted_read = ["N"] * len(read_bases)
-
+        length = int(np.random.normal(loc=self.avg_loop_length, scale=self.loop_length_sd))
+        start_pos = np.random.randint(0, len(self.seq_record.seq) - length)
+        
+        read_bases = self.seq_record.seq[start_pos : (start_pos + length)]
+        converted_read = [] * len(read_bases)
+        
         for each_base in read_bases:
             if "C" == each_base:
-                if np.random.random_sample <= conversion_eff:
+                if np.random.random_sample() <= self.conversion_eff:
                     converted_read.append("T")  # C->T conversion occurs
                     self.conversion_track.append("2")
-                    continue
                 else:
+                    converted_read.append(each_base)
                     self.conversion_track.append("1")
-                    continue
-            converted_read.append(each_base)
-            self.conversion_track.append("0")
-
+            else:
+                converted_read.append(each_base)
+                self.conversion_track.append("0")
+                
         self.read_counter += 1
+        
 
         return SeqRecord(
             Seq("".join(converted_read)),
-            id=f"{seq_record.id}+r{self.read_counter}",
-            name=f"{seq_record.name} read {self.read_counter}",
+            id=f"{self.seq_record.id}+r{self.read_counter}",
+            name=f"{self.seq_record.name} read {self.read_counter}",
+            description=f'Random bisulfite converted read from chr {self.seq_record.id}',
             annotations={
                 "conversion_eff": self.conversion_eff,
                 "read_length": length,
                 "read_id": self.read_counter,
-                "read_start": self.start_pos,
-                "avg_loop_length": self.average_loop_length,
+                "read_start": start_pos,
+                "avg_loop_length": self.avg_loop_length,
                 "chr_description": self.seq_record.description,
                 "chr_id": self.seq_record.id,
                 "chr_name": self.seq_record.name,
@@ -186,7 +189,7 @@ class readGenerator:
 
 def make_chr_and_reads(chromosome_table, chr_output_dir, read_output_dir, record_path):
     read_records = []
-    for index, row in chromosome_table:
+    for index, row in chromosome_table.iterrows():
         # Prepare generator to make chromosomes with characteristics specified
         # by current row of chromosome table
         generator = chromosomeGenerator(
@@ -196,7 +199,7 @@ def make_chr_and_reads(chromosome_table, chr_output_dir, read_output_dir, record
             row["c_content"],
             row["c_spacing"],
         )
-        for i in row["num_copies"]:
+        for i in range(row["num_copies"]):
             current_chrom = next(generator)
             fasta_name = f"CHR-{current_chrom.id}.fa"
             fasta_path = Path(chr_output_dir).joinpath(fasta_name)
@@ -206,7 +209,7 @@ def make_chr_and_reads(chromosome_table, chr_output_dir, read_output_dir, record
 
             # generate reads from chromosome
             read_gen = readGenerator(current_chrom, row["conversion_eff"])
-            reads = [next(read_gen) for _ in row["num_reads"]]
+            reads = [next(read_gen) for _ in range(row["num_reads"])]
 
             # Set location for writing reads to
             fastq_name = f"READS-{current_chrom.id}.fastq"
@@ -249,7 +252,7 @@ def get_args():
             particular chromosome.'
     )
     parser.add_argument(
-        'recordOut', metavar='R',
+        'recordOut', metavar='T',
         help='Path to write record table to. This is a tsv file containing \
             descriptions of all reads generated.'
     )
@@ -261,7 +264,11 @@ def main():
 
     args = get_args()
     
-    chromosome_table = pd.read(args.chrTable)
+    chromosome_table = pd.read_csv(args.chrTable, sep='\t')
+    
+    Path(args.chrOut).mkdir(parents=True, exist_ok=True)
+    Path(args.readOut).mkdir(parents=True, exist_ok=True)
+    
     make_chr_and_reads(chromosome_table, args.chrOut, args.readOut, args.recordOut)
 
 
