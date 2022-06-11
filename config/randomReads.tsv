@@ -1,7 +1,0 @@
-chromosome	nickname	length	c_content 	c_Spacing
-0	Uniform genomic C content		0.2	Uniform
-1	Uniform low C content		0.05	Uniform
-2	Random genomic C content		0.2	Random
-3	Random low C content		0.05	Random
-4	Genomic sinusoidal 		0.2	Sin
-5	Low sinusoidal		0.05	Sin
