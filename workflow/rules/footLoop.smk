@@ -1,10 +1,10 @@
 
 
-rule map_reads:
+rule map_reads_random:
     conda:
         '../envs/footloop.yml'
     input:
-        fastq='',
+        fastq='output/simulated/substrates/reads/{read_name}.fastq',
         index='',
         genome=''
     output:
