@@ -188,11 +188,18 @@ class readGenerator:
 
 
 def make_chr_bed_6(chromosome, bed_output_dir):
+    """Make a dummy gene annotation file from a given chromosome.
+
+    Args:
+        chromosome (SeqRecord): SeqRecord describing a chromosome.
+        bed_output_dir (str): Path to directory to write bed files to.
+    """
     length = len(chromosome.seq)
     output_path = Path(bed_output_dir).joinpath(f"BED-{chromosome.id}.bed")
 
     pd.DataFrame([[chromosome.id, 0, length, "dummyGene", 0, "+"]]).to_csv(
-        str(output_path), index=False, header=False, sep="\t")
+        str(output_path), index=False, header=False, sep="\t"
+    )
 
 
 def make_chr_and_reads(
