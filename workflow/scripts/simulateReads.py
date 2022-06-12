@@ -124,7 +124,6 @@ class chromosomeGenerator:
         return record
 
 
-
 class readGenerator:
     def __init__(
         self, seq_record, conversion_eff, avg_loop_length=200, loop_length_sd=20
@@ -137,17 +136,19 @@ class readGenerator:
         self.conversion_track = []  # 2=Converted C  # 1=Unconverted C # 0=Non-C base
 
     def get_read(self):
-        '''Generate a single read based on class attributes.
+        """Generate a single read based on class attributes.
 
         Returns:
             SeqRecord: BioPython SeqRecord object.
-        '''
-        length = int(np.random.normal(loc=self.avg_loop_length, scale=self.loop_length_sd))
+        """
+        length = int(
+            np.random.normal(loc=self.avg_loop_length, scale=self.loop_length_sd)
+        )
         start_pos = np.random.randint(0, len(self.seq_record.seq) - length)
-        
+
         read_bases = self.seq_record.seq[start_pos : (start_pos + length)]
         converted_read = [] * len(read_bases)
-        
+
         for each_base in read_bases:
             if "C" == each_base:
                 if np.random.random_sample() <= self.conversion_eff:
@@ -159,15 +160,14 @@ class readGenerator:
             else:
                 converted_read.append(each_base)
                 self.conversion_track.append("0")
-                
+
         self.read_counter += 1
-        
 
         return SeqRecord(
             Seq("".join(converted_read)),
             id=f"{self.seq_record.id}+r{self.read_counter}",
             name=f"{self.seq_record.name} read {self.read_counter}",
-            description=f'Random bisulfite converted read from chr {self.seq_record.id}',
+            description=f"Random bisulfite converted read from chr {self.seq_record.id}",
             annotations={
                 "conversion_eff": self.conversion_eff,
                 "read_length": length,
@@ -187,7 +187,17 @@ class readGenerator:
         return self.get_read()
 
 
-def make_chr_and_reads(chromosome_table, chr_output_dir, read_output_dir, record_path):
+def make_chr_bed_6(chromosome, bed_output_dir):
+    length = len(chromosome.seq)
+    output_path = Path(bed_output_dir).joinpath(f"BED-{chromosome.id}.bed")
+
+    pd.DataFrame([[chromosome.id, 0, length, "dummyGene", 0, "+"]]).to_csv(
+        str(output_path), index=False, header=False, sep="\t")
+
+
+def make_chr_and_reads(
+    chromosome_table, chr_output_dir, read_output_dir, bed_output_dir, record_path
+):
     read_records = []
     for index, row in chromosome_table.iterrows():
         # Prepare generator to make chromosomes with characteristics specified
@@ -206,6 +216,10 @@ def make_chr_and_reads(chromosome_table, chr_output_dir, read_output_dir, record
             # write generated chromosome to fasta file
             with open(str(fasta_path), "w") as handle:
                 SeqIO.write([current_chrom], handle, "fasta")
+
+            # Write a dummy bed file for gene annotations for the chromosome
+            # this seems to be required by the mapping script
+            make_chr_bed_6(current_chrom, bed_output_dir)
 
             # generate reads from chromosome
             read_gen = readGenerator(current_chrom, row["conversion_eff"])
@@ -236,44 +250,52 @@ def make_chr_and_reads(chromosome_table, chr_output_dir, read_output_dir, record
 
 
 def get_args():
-    
-    parser = argparse.ArgumentParser(description='Generate random bisulfite reads')
+
+    parser = argparse.ArgumentParser(description="Generate random bisulfite reads")
     parser.add_argument(
-        'chrTable', metavar='C', help='Path to chromosome configuration table')
+        "chrTable", metavar="C", help="Path to chromosome configuration table"
+    )
     parser.add_argument(
-        'chrOut', metavar='F', 
+        "chrOut",
+        metavar="F",
         help='Path to directory to write chromosome fasta files to. Reads are \
-            generated from these "chromosomes".'
+            generated from these "chromosomes".',
     )
     parser.add_argument(
-        'readOut', metavar='R',
-        help='Path to directory to write bisulfite converted reads to. 1 fastq \
+        "readOut",
+        metavar="R",
+        help="Path to directory to write bisulfite converted reads to. 1 fastq \
             file is generated per chromosome containing all reads for that \
-            particular chromosome.'
+            particular chromosome.",
     )
     parser.add_argument(
-        'recordOut', metavar='T',
-        help='Path to write record table to. This is a tsv file containing \
-            descriptions of all reads generated.'
+        "recordOut",
+        metavar="T",
+        help="Path to write record table to. This is a tsv file containing \
+            descriptions of all reads generated.",
+    )
+    parser.add_argument(
+        "bedOut",
+        metavar="B",
+        help="Path to directory to write gene annotation records (bed) files to.",
     )
     return parser.parse_args()
-    
 
 
 def main():
 
     args = get_args()
-    
-    chromosome_table = pd.read_csv(args.chrTable, sep='\t')
-    
+
+    chromosome_table = pd.read_csv(args.chrTable, sep="\t")
+
     Path(args.chrOut).mkdir(parents=True, exist_ok=True)
     Path(args.readOut).mkdir(parents=True, exist_ok=True)
-    
-    make_chr_and_reads(chromosome_table, args.chrOut, args.readOut, args.recordOut)
+    Path(args.bedOut).mkdir(parents=True, exist_ok=True)
+
+    make_chr_and_reads(
+        chromosome_table, args.chrOut, args.readOut, args.bedOut, args.recordOut
+    )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
-    
-    
-   
