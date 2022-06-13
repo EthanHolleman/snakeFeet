@@ -52,3 +52,11 @@
     However there is a very similarly named file `READS-c0-3_bismark_bt2_SE_report.txt` only
     differing by the absence of the `.fastq` file extension. Is this getting left
     on the path for some reason?
+    Looking more carefully we see that the output file that the program specifies when it says "success"
+    `Output /home/ethollem/projects/snakeFeet/output/simulated/mappedReads/MAPPED-c0-3/READS-c0-3.fastq_bismark_bt2.bam`
+    Does not actually exist in the output directory. Instead the most similar file is 
+    `READS-c0-3_bismark_bt2.bam` which does not have the fastq extension included.
+    - Solution: in the subroutine `run_bismark` the line `$mybam =~ s/.fq.gz_bismark_bt2/_bismark_bt2/;`
+    is used to define a filepath relating to bismark output file that must be read by the program. If
+    your reads do not have the exact file extension `.fq.gz` the script will be unable to find
+    the output file even if it is produced.
