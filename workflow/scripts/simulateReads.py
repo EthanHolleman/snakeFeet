@@ -117,7 +117,7 @@ class chromosomeGenerator:
     def _to_seq_record(self):
         record = SeqRecord(
             Seq("".join(self.seq)),
-            id=f"c{self.chromosome_id}-{self.sub_id}",
+            id=f"PCB{self.chromosome_id}0{self.sub_id}",
             name=self.nickname,
             description=f"Random chromosome C content:{self.c_content} with {self.c_spacing} distribution",
         )
@@ -160,7 +160,7 @@ class readGenerator:
             else:
                 converted_read.append(each_base)
                 self.conversion_track.append("0")
-
+        assert len(converted_read) == length
         self.read_counter += 1
 
         return SeqRecord(
@@ -168,7 +168,7 @@ class readGenerator:
             id=f"{self.seq_record.id}+r{self.read_counter}",
             name=f"{self.seq_record.name} read {self.read_counter}",
             description=f"Random bisulfite converted read from chr {self.seq_record.id}",
-            annotations={
+            annotations={  # annotations later written to tabular output for other programs
                 "conversion_eff": self.conversion_eff,
                 "read_length": length,
                 "read_id": self.read_counter,
@@ -178,7 +178,7 @@ class readGenerator:
                 "chr_id": self.seq_record.id,
                 "chr_name": self.seq_record.name,
                 "read_seq": "".join(converted_read),
-                "conversion_track": "".join(self.conversion_track),
+                "conversion_track": "".join(self.conversion_track)
             },
             letter_annotations={"solexa_quality": [40] * length},
         )
@@ -195,7 +195,7 @@ def make_chr_bed_6(chromosome, bed_output_dir):
         bed_output_dir (str): Path to directory to write bed files to.
     """
     length = len(chromosome.seq)
-    output_path = Path(bed_output_dir).joinpath(f"BED-{chromosome.id}.bed")
+    output_path = Path(bed_output_dir).joinpath(f"BED_{chromosome.id}.bed")
 
     pd.DataFrame([[chromosome.id, 0, length, "dummyGene", 0, "+"]]).to_csv(
         str(output_path), index=False, header=False, sep="\t"
@@ -218,7 +218,7 @@ def make_chr_and_reads(
         )
         for i in range(row["num_copies"]):
             current_chrom = next(generator)
-            fasta_name = f"CHR-{current_chrom.id}.fa"
+            fasta_name = f"CHR_{current_chrom.id}.fa"
             fasta_path = Path(chr_output_dir).joinpath(fasta_name)
             # write generated chromosome to fasta file
             with open(str(fasta_path), "w") as handle:
@@ -233,7 +233,7 @@ def make_chr_and_reads(
             reads = [next(read_gen) for _ in range(row["num_reads"])]
 
             # Set location for writing reads to
-            fastq_name = f"READS-{current_chrom.id}.fastq"
+            fastq_name = f"READS_{current_chrom.id}.fq"
             fastq_path = Path(read_output_dir).joinpath(fastq_name)
 
             # record read information in table for later reference by other
