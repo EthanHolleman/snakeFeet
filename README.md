@@ -28,14 +28,14 @@ simulated chromosome and should contain the following columns.
 
 | Field          | Value                                                                                                                       |
 | -------------- | --------------------------------------------------------------------------------------------------------------------------- |
-| chromosome_id  | A unique integer or string to identify this chromosome (no spaces)                                                          |
+| chromosome_id  | A unique integer to identify this chromosome (no spaces integer only)                                                       |
 | nickname       | Easier to remember description of this chromosome, may be shown in plots                                                    |
 | num_copies     | Integer number of copies of this chromosome to generate during analysis.                                                    |
 | length         | Length of chromosome in basepairs (integer)                                                                                 |
-| c_content      | The proportion of C nucleotides (float)                                                                                     |
+| c_content      | The proportion of C nucleotides (float between 0 and 1)                                                                     |
 | c_spacing      | Defines how C bases are distributed throughput the chromosome sequence; options currently are `uniform`, `random` or `sin`. |
-| num_reads      | Number of reads to draw from each copy of this chromosome                                                                   |
-| conversion_eff | Bisulfite C -> T conversion efficiency to apply to all reads from this chromosome.                                          |
+| num_reads      | Number of reads to draw from each copy of this chromosome (integer)                                                         |
+| conversion_eff | Bisulfite C -> T conversion efficiency to apply to all reads from this chromosome (float between 0 and 1).                  |
 
 
 #### Experimental runs
