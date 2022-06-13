@@ -1,17 +1,17 @@
 import pandas as pd
 
 include: 'rules/sim.smk'
-include: 'rules/footLoop.smk'
+#include: 'rules/footLoop.smk'
 
 if config['simulated']:  # Run simulated bisulfite read rules
     targets = 'output/simulated/substrates/recordTable.tsv'
 
-    chr_names = ['c0-1', 'c0-2', 'c0-3']
+    chr_names = ['PCB001', 'PCB002', 'PCB003']
 
 rule all:
     input:
         expand(
-            'output/simulated/mappedReads/MAPPED-{chr_name}',
+            'output/simulated/calledPeaks/PEAKS_{chr_name}',
             chr_name=chr_names
         )
 
