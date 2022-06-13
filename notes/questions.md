@@ -9,6 +9,17 @@
     mapping to. For simulated reads just generating a dummy gene that spans the
     length of the chromosome.
 - What is `-l` (label) used for?
+  - So it turns out the label is actually very important in this pipeline even though this
+    is not documented in the README. After getting errors when running `footPeak.pl` I started
+    digging through the code and found this line
+    ```
+    	if (not defined $label or (defined $label and $label !~ /PCB/i)) {
+		die "Please make sure your output folder (-o) contain PCB(number) e.g. PCB12: 180202_PCB12_footpeak_output (no space/dash between PCB and number)\n\n";
+	}
+    ```
+    This if statement was not invoked even though my filepaths did not include the label
+    and did include dashes. Will have to go back and update labels and such in order
+    to be up to this requirement. The label itself must have the format `PCB\d+`.
 
 ### Errors
 
